@@ -266,7 +266,7 @@ class SplashScreen extends HookWidget {
       Future<void> initialize() async {
         bool dependenciesReady = await checkAndInstallDependencies();
         if (dependenciesReady) {
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
         } else {
           if (kDebugMode) {
             print("Unable to install all required dependencies.");

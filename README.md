@@ -1,19 +1,42 @@
-# yt_desk
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
 # YT_DESK
-# YT_DESK
-# YT_DESK
+
+YT_DESK is a Flutter application designed for downloading videos and audio from various social media platforms. The app provides an easy-to-use GUI and ensures that all necessary dependencies, such as Python and yt-dlp, are installed automatically.
+
+## Features
+
+- **Simple GUI**: User-friendly interface for downloading videos and audio from social media platforms.
+- **Automatic Dependency Management**: Checks for Python installation and installs it if missing.
+- **yt-dlp Management**: Automatically checks for the yt-dlp package after Python installation and installs it if required.
+- **Password Prompt Handling**: Seamless handling of sudo password prompts during installation.
+
+## Installation
+
+### 1. Clone the Repository
+```bash
+    git clone https://github.com/adityakumar-dev/YT_DESK
+```
+
+### Navigate to the project directory
+```bash
+    cd YT_DESK
+```
+### install packages
+```bash
+    flutter pub get
+```
+### run project
+```bash 
+    flutter run
+```
+
+## Screenshots
+
+### HOME
+
+![Home](GIT_ASSET/Home.png)
+
+### DOWNLOAD MANAGER 
+
+![Home](GIT_ASSET/downloadManager.png)
+
+## Thanks for Visting
