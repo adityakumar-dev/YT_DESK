@@ -10,42 +10,73 @@ class DownloadScreen extends StatelessWidget {
     return Consumer<DownloadManager>(
       builder: (context, downloadProvider, child) {
         return Scaffold(
-          appBar: AppBar(title: Text('Download Manager')),
+          appBar: AppBar(title: const Text('Download Manager')),
           body: ListView.builder(
             itemCount: downloadProvider.processes.length,
             itemBuilder: (context, index) {
               final data = downloadProvider.processes[index];
-              return ListTile(
-                title: Text(data.title),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    StreamBuilder<double>(
-                      stream: data.progressStream,
-                      builder: (context, snapshot) {
-                        final progress = snapshot.data ?? 0.0;
-                        return Text(
-                            'Progress: ${progress.toStringAsFixed(2)}%');
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white12),
+                child: ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        data.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Visibility(
+                        visible: data.isCompleted,
+                        child: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            downloadProvider.cancelDownload(index);
+                            downloadProvider.removeDownload(index);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                          visible: !data.isCompleted,
+                          child: Text('Stdout: ${data.stdout}')),
+                      if (data.isFailed ?? false)
+                        const Text(
+                          'Failed',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      if (data.isCompleted)
+                        const Text(
+                          'Completed',
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      Text(
+                        "Path : ${data.outputPath}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: Visibility(
+                    visible: !data.isCompleted,
+                    child: IconButton(
+                      icon: const Icon(Icons.cancel),
+                      onPressed: () {
+                        downloadProvider.cancelDownload(index);
+                        data.deleteFile();
                       },
                     ),
-                    Text('Stdout: ${data.stdout}'),
-                    if (data.isFailed ?? false)
-                      const Text(
-                        'Failed',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    if (data.isCompleted)
-                      const Text(
-                        'Completed',
-                        style: TextStyle(color: Colors.green),
-                      ),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.cancel),
-                  onPressed: () {
-                    downloadProvider.cancelDownload(index);
-                  },
+                  ),
                 ),
               );
             },

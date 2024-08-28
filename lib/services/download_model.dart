@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
-class DownloadModel {
+class DownloadModel extends ChangeNotifier {
   Process? process;
   String title = '';
   bool isRunning = false;
@@ -27,6 +28,8 @@ class DownloadModel {
 
   Future<void> startDownload() async {
     isRunning = true;
+    notifyListeners(); // Notify listeners that the download has started
+
     process = await Process.start(
       'yt-dlp',
       arguments,
@@ -34,18 +37,19 @@ class DownloadModel {
     );
 
     process!.stdout.transform(utf8.decoder).listen((data) {
-      stdout += data;
+      stdout = data;
       print(data);
-      // Example of extracting progress from stdout. Adjust based on yt-dlp output.
       final progressMatch = RegExp(r'(\d+)%').firstMatch(stdout);
       if (progressMatch != null) {
         final progress = double.tryParse(progressMatch.group(1) ?? '') ?? 0.0;
         _progressController.add(progress / 100);
+        notifyListeners(); // Notify listeners on progress update
       }
     });
 
     process!.stderr.transform(utf8.decoder).listen((data) {
-      stderr += data;
+      stderr = data;
+      notifyListeners(); // Notify listeners on error
     });
 
     await process!.exitCode.then((value) {
@@ -57,11 +61,13 @@ class DownloadModel {
         isFailed = true;
       }
       _progressController.close();
+      notifyListeners(); // Notify listeners when the download is completed
     });
   }
 
   void dispose() {
     _progressController.close();
+    super.dispose();
   }
 
   void closeDownload() async {
@@ -71,6 +77,28 @@ class DownloadModel {
       isRunning = false;
       isFailed = true;
       _progressController.close();
+      notifyListeners(); // Notify listeners when download is canceled
+    }
+  }
+
+  void deleteFile() async {
+    try {
+      var file = Directory(outputPath).listSync().whereType<File>();
+      for (var f in file) {
+        final filename = f.uri.pathSegments.last;
+        if (filename.startsWith(title)) {
+          try {
+            await f.delete();
+          } catch (e) {
+            print(e);
+          }
+        }
+      }
+      for (var f in file) {
+        await f.delete();
+      }
+    } catch (e) {
+      print("Error Deleting file");
     }
   }
 }

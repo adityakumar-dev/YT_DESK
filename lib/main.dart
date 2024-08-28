@@ -9,7 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowManager.instance.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-      minimumSize: Size(800, 1000), skipTaskbar: false, title: "YT_DL : Home");
+      minimumSize: Size(800, 1050), skipTaskbar: false, title: "YT_DL : Home");
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();

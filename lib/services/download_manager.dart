@@ -11,6 +11,12 @@ class DownloadManager extends ChangeNotifier {
     DownloadModel download = DownloadModel(
         title: title, url: url, arguments: arguments, outputPath: path);
     download.startDownload();
+
+    download.addListener(
+      () {
+        notifyListeners();
+      },
+    );
     print("Download starting");
     _processes.add(download);
     print("Download started");

@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
@@ -92,20 +94,20 @@ class _HomeScreenState extends State<HomeScreen> {
       // Wait for process to exit and check the exit code
       int exitCode = await process.exitCode;
       if (exitCode != 0) {
-        print('Error: $error');
+        // print('Error: $error');
         return null; // or handle error more appropriately
       }
 
       // Check if there was any error
       if (error.isNotEmpty) {
-        print('Error: $error');
+        // print('Error: $error');
         return null; // or handle error more appropriately
       }
 
       // Return the title after process completion
       return title.trim(); // Remove any trailing newlines
     } catch (e) {
-      print('Exception: ${e.toString()}');
+      // print('Exception: ${e.toString()}');
       return null;
     }
   }
@@ -140,22 +142,84 @@ class _HomeScreenState extends State<HomeScreen> {
         '${path.text}/%(title)s.%(ext)s',
         url.text,
       ]);
-      getTitle().then(
-        (value) {
-          if (value != null) {
-            downloadProvider.addDownload(value, url.text, arguments, path.text);
-            print("Download added");
-          }
-          print(value);
-        },
-      );
+      if (path.text.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text("Please choose a correct directory")),
+          );
+      } else if (url.text.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text("Please paste the URL")),
+          );
+      } else if (radioButtonValue == null && quality != 'Best') {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text("Please choose a quality")),
+          );
+      } else {
+        download_confirmed(context);
 
-      print(
-          "Url is : ${url.text}, path : ${path.text}, isvideo : $isVideo, Quality : $radioButtonValue, attributes : $isSponserBlock, $isSubtitle");
-      print(arguments);
+        getTitle().then(
+          (value) {
+            if (value != null) {
+              downloadProvider.addDownload(
+                  value, url.text, arguments, path.text);
+            }
+            if (kDebugMode) {
+              print(value);
+            }
+          },
+        );
+      }
+
+      if (kDebugMode) {
+        print(
+            "Url is : ${url.text}, path : ${path.text}, isvideo : $isVideo, Quality : $radioButtonValue, attributes : $isSponserBlock, $isSubtitle");
+        print(arguments);
+      }
     }
 
     return _getwidget(context, handleDownload);
+  }
+
+  Future<dynamic> download_confirmed(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                'assets/started.svg',
+                height: 70,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text(
+                "Download Strting...",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Okay"))
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Scaffold _getwidget(
@@ -242,92 +306,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Spacer()
                   ],
                 ),
+                webm_warning(quality: quality, isVideo: isVideo),
                 const SizedBox(height: 30),
-                if (quality != 'Best')
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start, // Align columns at the top
-                    children: [
-                      const Spacer(),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment
-                              .start, // Align children to the start of the column
-                          children: [
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Quality",
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ...List.generate(
-                              getFormat().length,
-                              (index) => RadioListTile<String>(
-                                title: Text(
-                                  "${getFormat()[index]['quality']} ${getFormat()[index]['fps'] ?? ''}",
-                                ),
-                                value: getFormat()[index]['format_id'],
-                                groupValue: radioButtonValue,
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    radioButtonValue = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20), // Add spacing between columns
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment
-                              .start, // Align children to the start of the column
-                          children: [
-                            const Text(
-                              'Attributes',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment
-                                  .start, // Align children to the start
-                              children: [
-                                ListTile(
-                                  leading: Checkbox(
-                                    value: isSubtitle,
-                                    onChanged: (bool? value) =>
-                                        onisSubtitleChange(value!),
-                                  ),
-                                  title: const Text("Add Subtitles"),
-                                  onTap: () => onisSubtitleChange(!isSubtitle),
-                                ),
-                                ListTile(
-                                  leading: Checkbox(
-                                    value: isSponserBlock,
-                                    onChanged: (bool? value) =>
-                                        onisSponserBlockChange(value!),
-                                  ),
-                                  title: const Text("Sponsor Block"),
-                                  onTap: () =>
-                                      onisSponserBlockChange(!isSponserBlock),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Spacer()
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Centers the entire row
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Aligns the columns at the top
+                  children: [
+                    const Spacer(),
+                    select_format_quality(),
+                    attributes(),
+                    const Spacer()
+                  ],
+                ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -343,6 +335,111 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Expanded attributes() {
+    return Expanded(
+        child: Column(
+      children: [
+        Row(
+          children: [
+            Switch(
+              value: isSubtitle,
+              onChanged: (value) {
+                onisSubtitleChange(!isSubtitle);
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            const Text("Subtitles")
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          children: [
+            Switch(
+              value: isSponserBlock,
+              onChanged: (value) {
+                onisSubtitleChange(!isSponserBlock);
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            const Text("Sponser Block")
+          ],
+        ),
+      ],
+    ));
+  }
+
+  Visibility select_format_quality() {
+    return Visibility(
+      visible: quality != 'Best',
+      child: Expanded(
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Aligns text to the left
+          children: [
+            const Text(
+              "Quality",
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(
+              getFormat().length,
+              (index) => Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical:
+                        8.0), // Adds vertical spacing between radio buttons
+                child: RadioListTile<String>(
+                  title: Text(
+                    "${getFormat()[index]['quality']} ${getFormat()[index]['fps'] != null ? '(${getFormat()[index]['fps']} fps)' : ''}", // Displays fps if available
+                    style: const TextStyle(fontSize: 18), // Custom font size
+                  ),
+                  value: getFormat()[index]['format_id'],
+                  groupValue: radioButtonValue,
+                  onChanged: (String? value) {
+                    setState(() {
+                      radioButtonValue = value;
+                    });
+                  },
+                  activeColor: Colors.blueAccent, // Custom active color
+                ),
+              ),
+            ),
+            const SizedBox(height: 16), // Spacing after the last radio button
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class webm_warning extends StatelessWidget {
+  const webm_warning({
+    super.key,
+    required this.quality,
+    required this.isVideo,
+  });
+
+  final String quality;
+  final int isVideo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+        visible: quality == 'webm' && isVideo == 0,
+        child: const Text(
+          "Warning:WEBM quality may not be available, and high-quality options might be limited. Please consider choosing a different format if issues arise.",
+          style: TextStyle(color: Colors.yellow),
+        ));
   }
 }
 
@@ -434,7 +531,7 @@ class Heading_Yt_Desk extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 40.0),
+      padding: const EdgeInsets.only(top: 10.0),
       child: Text(
         "YT_DESK",
         style: GoogleFonts.roboto(
