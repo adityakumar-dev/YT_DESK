@@ -63,6 +63,7 @@ class SplashScreen extends HookWidget {
           if (kDebugMode) {
             print("stdout: $data");
           }
+          commandOutput.value = data;
           outputBuffer.write(data);
         });
 
@@ -71,6 +72,7 @@ class SplashScreen extends HookWidget {
             print("stderr: $data");
           }
           outputBuffer.write(data);
+          commandOutput.value = data;
 
           if (data.contains('[sudo] password')) {
             if (!passwordEntered.isCompleted) {
@@ -177,7 +179,16 @@ class SplashScreen extends HookWidget {
         if (distro == "arch") {
           installCommand = 'sudo';
           installArgs = ['-S', 'pacman', '-S', '--noconfirm', 'yt-dlp'];
-        } else {
+        }
+        else if(distro == "ubuntu"){
+          installCommand = "sudo";
+          installArgs = ['-S', 'apt-get', 'install', '-y', 'yt-dlp'];
+        }
+        else if(distro == "fedora"){
+          installCommand = "sudo";
+          installArgs = ['-S', 'dnf', 'install', '-y', 'yt-dlp'];
+        }
+         else {
           installCommand = 'pip';
           installArgs = ['install', 'yt-dlp'];
         }
@@ -186,7 +197,7 @@ class SplashScreen extends HookWidget {
         }
         await _runCommand(installCommand, installArgs);
       } catch (e) {
-        // await showErrorDialog('Error installing yt-dlp: $e');
+        await showErrorDialog('Error installing yt-dlp: $e');
       }
     }
 
