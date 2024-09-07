@@ -22,24 +22,24 @@ class SplashScreen extends HookWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("Password required"),
+            title: const Text("Password required"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter password',
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     password.value = passwordController.text;
                     Navigator.of(context).pop();
                   },
-                  child: Text("OK"),
+                  child: const Text("OK"),
                 ),
               ],
             ),
@@ -122,13 +122,13 @@ class SplashScreen extends HookWidget {
       try {
         final process = await Process.run('cat', ['/etc/os-release']);
         final output = process.stdout as String;
-        if (output.contains('Ubuntu')) {
+        if (output.contains('Ubuntu') || output.contains('ubuntu')) {
           return 'ubuntu';
-        } else if (output.contains('Debian')) {
+        } else if (output.contains('Debian') || output.contains('debian')) {
           return 'debian';
-        } else if (output.contains('Fedora')) {
+        } else if (output.contains('Fedora') || output.contains('fedora')) {
           return 'fedora';
-        } else if (output.contains('Arch')) {
+        } else if (output.contains('Arch') || output.contains('arch')) {
           return 'arch';
         } else {
           return 'unknown';
@@ -192,17 +192,16 @@ class SplashScreen extends HookWidget {
 
     Future<void> checkYtDlp() async {
       try {
-        // First, check if the yt-dlp executable exists
-        ProcessResult whichResult = await Process.run('which', ['yt-dlp']);
+        // Using 'command -v' instead of 'which' to check for yt-dlp binary
+        ProcessResult whichResult =
+            await Process.run('command', ['-v', 'yt-dlp']);
 
         if (whichResult.exitCode != 0) {
-          // yt-dlp is not found, so we need to install it
           if (kDebugMode) {
             print("yt-dlp is not installed, installing...");
           }
           await installYtDlp();
         } else {
-          // yt-dlp exists, now check its version
           ProcessResult versionResult =
               await Process.run('yt-dlp', ['--version']);
           if (versionResult.exitCode != 0) {
@@ -229,11 +228,15 @@ class SplashScreen extends HookWidget {
       try {
         ProcessResult result = await Process.run('python3', ['--version']);
         if (result.exitCode != 0) {
-          await installPython();
-          if (kDebugMode) {
-            print("python is now installed");
+          // Try checking for just 'python' if 'python3' is not found
+          result = await Process.run('python', ['--version']);
+          if (result.exitCode != 0) {
+            await installPython();
+            if (kDebugMode) {
+              print("Python is now installed.");
+            }
+            await checkYtDlp();
           }
-          await checkYtDlp();
         } else {
           if (kDebugMode) {
             print("Python is already installed.");
@@ -271,11 +274,30 @@ class SplashScreen extends HookWidget {
           if (kDebugMode) {
             print("Unable to install all required dependencies.");
           }
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(
-                content: Text(
-                    "Unknown error please install python and yt-dlp manually")));
+
+          await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Error!"),
+                content: const Text(
+                    "Python or yt-dlp not installed. Please install manually!"),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      if (Platform.isAndroid || Platform.isIOS) {
+                        SystemNavigator.pop(animated: true);
+                      } else {
+                        exit(0); // For desktop
+                      }
+                    },
+                    child: const Text("Exit"),
+                  ),
+                ],
+              );
+            },
+          );
         }
       }
 
@@ -288,7 +310,10 @@ class SplashScreen extends HookWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [CircularProgressIndicator(), Text(commandOutput.value)],
+          children: [
+            const CircularProgressIndicator(),
+            Text(commandOutput.value)
+          ],
         ),
       ),
     );
