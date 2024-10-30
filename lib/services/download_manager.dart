@@ -17,9 +17,7 @@ class DownloadManager extends ChangeNotifier {
         notifyListeners();
       },
     );
-    print("Download starting");
     _processes.add(download);
-    print("Download started");
     notifyListeners();
   }
 
@@ -32,7 +30,7 @@ class DownloadManager extends ChangeNotifier {
 
   void removeDownload(int index) {
     if (index >= 0 && index < _processes.length) {
-      _processes[index].closeDownload(); // Ensure to cancel if still running
+      _processes[index].closeDownload();
       _processes.removeAt(index);
       notifyListeners();
     }

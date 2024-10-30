@@ -236,102 +236,104 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          children: [
-            const Heading_Yt_Desk(),
-            File_Path(path: path),
-            const SizedBox(height: 20),
-            UrlTextEditor(url: url),
-            const SizedBox(height: 30),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Text(
-                    "Choose Download Options",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            children: [
+              const Heading_Yt_Desk(),
+              File_Path(path: path),
+              const SizedBox(height: 20),
+              UrlTextEditor(url: url),
+              const SizedBox(height: 30),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Text(
+                      "Choose Download Options",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    const Spacer(),
-                    const Text(
-                      "Format",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    const SizedBox(width: 40),
-                    DropdownButton<int>(
-                      value: isVideo,
-                      items: const [
-                        DropdownMenuItem(value: 0, child: Text("Video")),
-                        DropdownMenuItem(value: 1, child: Text("Audio")),
-                      ],
-                      onChanged: (int? value) {
-                        setState(() {
-                          isVideo = value!;
-                          quality = "Best";
-                          isSubtitle = true;
+                  Row(
+                    children: [
+                      const Spacer(),
+                      const Text(
+                        "Format",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                      const SizedBox(width: 40),
+                      DropdownButton<int>(
+                        value: isVideo,
+                        items: const [
+                          DropdownMenuItem(value: 0, child: Text("Video")),
+                          DropdownMenuItem(value: 1, child: Text("Audio")),
+                        ],
+                        onChanged: (int? value) {
+                          setState(() {
+                            isVideo = value!;
+                            quality = "Best";
+                            isSubtitle = true;
 
-                          radioButtonValue =
-                              null; // Reset the selected radio button
-                        });
-                      },
-                    ),
-                    const Spacer(),
-                    const Text(
-                      "Type",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    const SizedBox(width: 40),
-                    DropdownButton<String>(
-                      value: quality,
-                      items: getType(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          quality = value!;
-                          radioButtonValue =
-                              null; // Reset the selected radio button
-                        });
-                      },
-                    ),
-                    const Spacer()
-                  ],
-                ),
-                webm_warning(quality: quality, isVideo: isVideo),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Centers the entire row
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // Aligns the columns at the top
-                  children: [
-                    const Spacer(),
-                    select_format_quality(),
-                    attributes(),
-                    const Spacer()
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                            radioButtonValue =
+                                null; // Reset the selected radio button
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      const Text(
+                        "Type",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                      const SizedBox(width: 40),
+                      DropdownButton<String>(
+                        value: quality,
+                        items: getType(),
+                        onChanged: (String? value) {
+                          setState(() {
+                            quality = value!;
+                            radioButtonValue =
+                                null; // Reset the selected radio button
+                          });
+                        },
+                      ),
+                      const Spacer()
+                    ],
                   ),
-                  onPressed: handleDownload,
-                  child: const Text("Get Info"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
+                  webm_warning(quality: quality, isVideo: isVideo),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // Centers the entire row
+                    crossAxisAlignment: CrossAxisAlignment
+                        .start, // Aligns the columns at the top
+                    children: [
+                      const Spacer(),
+                      select_format_quality(),
+                      attributes(),
+                      const Spacer()
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                    ),
+                    onPressed: handleDownload,
+                    child: const Text("Get Info"),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

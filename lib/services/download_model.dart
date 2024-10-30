@@ -28,7 +28,7 @@ class DownloadModel extends ChangeNotifier {
 
   Future<void> startDownload() async {
     isRunning = true;
-    notifyListeners(); // Notify listeners that the download has started
+    notifyListeners();
 
     process = await Process.start(
       'yt-dlp',
@@ -77,7 +77,7 @@ class DownloadModel extends ChangeNotifier {
       isRunning = false;
       isFailed = true;
       _progressController.close();
-      notifyListeners(); // Notify listeners when download is canceled
+      notifyListeners();
     }
   }
 
