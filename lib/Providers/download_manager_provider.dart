@@ -3,18 +3,27 @@ import 'package:yt_desk/Models/download_model.dart';
 import 'package:yt_desk/Providers/download_item_provider.dart';
 
 class DownloadManagerProvider extends ChangeNotifier {
-  List<DownloadItemProvider> _downloadList = [];
+  final List<DownloadItemProvider> _downloadList = [];
   List<DownloadItemProvider> get downloadList => _downloadList;
 
   //function for add download
-  void addDownload(
-      String title, String url, List<String> arguments, String path) {
+  void addDownload(String title, String url, List<String> arguments,
+      String path, String description) {
     // new object of downloadItemModel
-    DownloadItemModel download = DownloadItemModel(
-        title: title, url: url, arguments: arguments, outputPath: path);
 
+    DownloadItemModel download = DownloadItemModel(
+        title: title,
+        url: url,
+        arguments: arguments,
+        outputPath: path,
+        description: description);
+
+    print(download.url);
     DownloadItemProvider downloadItemProvider = DownloadItemProvider();
+    print(download);
     downloadItemProvider.startDownload(download);
+    print("Download Added");
+
     // adding listener for track the downloadItemModel
     downloadItemProvider.addListener(
       () => notifyListeners(),

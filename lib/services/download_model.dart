@@ -65,6 +65,7 @@ class DownloadModel extends ChangeNotifier {
     });
   }
 
+  @override
   void dispose() {
     _progressController.close();
     super.dispose();

@@ -1,48 +1,121 @@
 //custom sizes
 import 'package:flutter/material.dart';
 
-int kSize5 = 5;
-int kSize7 = 7;
-int kSize9 = 9;
-int kSize11 = 11;
-int kSize13 = 13;
-int kSize15 = 15;
-int kSize16 = 16;
-int kSize18 = 18;
-int kSize22 = 22;
-int kSize24 = 24;
-int kSize26 = 26;
-int kSize28 = 28;
-int kSize30 = 30;
-int kSize36 = 36;
-int kSize42 = 42;
-int kSize48 = 48;
-int kSize50 = 50;
-int kSize60 = 60;
-int kSize70 = 70;
-int kSize80 = 80;
-int kSize90 = 90;
-int kSize100 = 100;
+double kSize5 = 5;
+double kSize7 = 7;
+double kSize9 = 9;
+double kSize11 = 11;
+double kSize13 = 13;
+double kSize15 = 15;
+double kSize16 = 16;
+double kSize18 = 18;
+double kSize22 = 22;
+double kSize24 = 24;
+double kSize26 = 26;
+double kSize28 = 28;
+double kSize30 = 30;
+double kSize36 = 36;
+double kSize42 = 42;
+double kSize48 = 48;
+double kSize50 = 50;
+double kSize60 = 60;
+double kSize70 = 70;
+double kSize80 = 80;
+double kSize90 = 90;
+double kSize100 = 100;
 
 //app colors
 Color whiteColor = Colors.white;
 Color blackColor = Colors.black;
-Color lightGrayColor = const Color(0xFFF2F2F2); // Light gray for backgrounds
-Color darkGrayColor = const Color(0xFF4A4A4A); // Dark gray for text
-Color softBlueColor = const Color(0xFF89CFF0); // Soft light blue for highlights
-Color mutedBlueColor =
-    const Color(0xFF3A5A80); // Muted blue for buttons or icons
-Color paleGreenColor =
-    const Color(0xFFB2E5B2); // Light pastel green for accents
-Color forestGreenColor = Color(0xFF228B22); // Dark green for buttons or accents
-Color softPinkColor = Color(0xFFF7C4C4); // Soft pink for subtle highlights
-Color lavenderColor = Color(0xFFD9B3FF); // Lavender for calming backgrounds
-Color pastelYellowColor = Color(0xFFFFF5BA); // Pastel yellow for highlights
-Color coralColor = Color(0xFFFF6F61); // Coral for primary buttons or alerts
-Color skyBlueColor = Color(0xFF87CEEB); // Sky blue for fresh accents
-Color warmBeigeColor = Color(0xFFF5F5DC); // Warm beige for backgrounds
-Color deepNavyColor = Color(0xFF2C3E50); // Deep navy for text or headers
-Color oliveGreenColor = Color(0xFF708238); // Olive green for accents
-Color warmAmberColor = Color(0xFFFFBF00); // Amber for highlights
+Color lightGrayColor = const Color(0xFFF2F2F2);
+Color darkGrayColor = const Color(0xFF4A4A4A);
+Color softBlueColor = const Color(0xFF89CFF0);
+Color mutedBlueColor = const Color(0xFF3A5A80);
+Color paleGreenColor = const Color(0xFFB2E5B2);
+const Color lightRed = Color(0xFFFFCDD2); // Light red, great for backgrounds
+const Color primaryRed = Color(0xFFF44336);
+const Color darkRed = Color(0xFFD32F2F);
+Color deepRed = const Color(0xFFB71C1C);
+// Whites & Grays
+const Color pureWhite = Color(0xFFFFFFFF); // Pure white, clean background
+const Color offWhite = Color(0xFFF9F9F9); // Off-white, softer for backgrounds
+const Color lightGray =
+    Color(0xFFEEEEEE); // Light gray, subtle for dividers and accents
+const Color mediumGray =
+    Color(0xFFBDBDBD); // Medium gray, ideal for text or borders
+const Color darkGray = Color(0xFF757575);
+//TextStyle
+kTextStyle(double textSize, Color color, bool isBold) => TextStyle(
+    fontSize: textSize,
+    color: color,
+    fontWeight: isBold ? FontWeight.bold : null);
 
-class UiHelper {}
+//sizedBox
+heightBox(double size) {
+  return SizedBox(
+    height: size,
+  );
+}
+
+widthBox(double size) {
+  return SizedBox(
+    width: size,
+  );
+}
+
+getBanner() {
+  return Container(
+    padding: EdgeInsets.symmetric(vertical: kSize42, horizontal: kSize24),
+    decoration: BoxDecoration(
+      color: primaryRed,
+      boxShadow: [
+        BoxShadow(
+          color: primaryRed.withOpacity(0.4),
+        ),
+      ],
+      border: Border.all(color: lightGray, width: 1),
+      borderRadius: BorderRadius.all(Radius.circular(kSize16)),
+    ),
+    child: Text(
+      "YT_DESK",
+      style: kTextStyle(kSize80, lightGray, false),
+    ),
+  );
+}
+
+getInputDecoration(String label) {
+  return InputDecoration(
+    fillColor: Colors.white,
+    enabledBorder: OutlineInputBorder(
+      borderSide: const BorderSide(
+        color: lightRed,
+      ),
+      borderRadius: BorderRadius.circular(kSize13),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: const BorderSide(
+        color: darkRed,
+      ),
+      borderRadius: BorderRadius.circular(kSize13),
+    ),
+    labelText: label,
+    labelStyle: const TextStyle(
+      color: lightRed,
+    ),
+  );
+}
+
+kBoxDecoration() {
+  return BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade300,
+        blurRadius: 10,
+        offset: const Offset(0, 5),
+      ),
+    ],
+    border: Border.all(color: lightRed, width: 2),
+    borderRadius: BorderRadius.circular(kSize16),
+  );
+}

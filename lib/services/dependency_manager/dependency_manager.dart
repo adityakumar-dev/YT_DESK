@@ -141,4 +141,15 @@ class DependencyManager {
       return false; // An error occurred
     }
   }
+
+  static Future<bool> handlePassword(String distro) async {
+    try {
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print(' $e');
+      }
+      return false; // An error occurred
+    }
+  }
 }

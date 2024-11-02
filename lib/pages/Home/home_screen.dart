@@ -12,6 +12,7 @@ import 'package:yt_desk/data/format_id_list.dart';
 import 'package:yt_desk/services/download_manager.dart';
 
 class HomeScreen extends StatefulWidget {
+  static const String rootName = "HomeScreen";
   const HomeScreen({super.key});
 
   @override
@@ -476,7 +477,7 @@ class File_Path extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.folder),
+              icon: const Icon(Icons.folder),
               onPressed: () async {
                 path.text = await FilePicker.platform.getDirectoryPath() ?? '';
               },
