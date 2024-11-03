@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
+import 'package:yt_desk/pages/Download/download_feature_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 
 import '../../Providers/download_manager_provider.dart';
@@ -118,7 +119,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     color: primaryRed,
                     size: kSize36,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+                    Navigator.pop(context);
+                  },
                 ),
                 widthBox(kSize24),
                 Text(
@@ -199,6 +203,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   Widget downloadSectionWidget(Size size) {
     return Container(
       // Customize your download section here
+      height: size.height,
       padding: EdgeInsets.symmetric(horizontal: kSize16, vertical: kSize16),
 
       decoration: kBoxDecoration(),
@@ -355,6 +360,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           onTap: () {
                             ScaffoldMessenger.of(context)
                                 .hideCurrentMaterialBanner();
+                            Navigator.pushNamed(
+                                context, DownloadFeatureScreen.rootName);
                           },
                           child: Text(
                             "View",

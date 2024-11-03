@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/download_manager_provider.dart';
-import 'package:yt_desk/UiHelper/ui_helper.dart'; // Assuming this contains your theme, styles, and common widgets.
-import 'package:yt_desk/services/search_manager/search_manager.dart'; // Assuming this manages your media data.
+import 'package:yt_desk/UiHelper/ui_helper.dart';
 
 class DownloadFeatureScreen extends StatefulWidget {
   static const String rootName = "DownloadFeatureScreen";
@@ -18,67 +17,42 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: Size(size.width, 70),
-          child: Container(
-            margin:
-                EdgeInsets.symmetric(horizontal: kSize16, vertical: kSize16),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new_outlined),
-                  color: primaryRed,
-                ),
-                widthBox(kSize24),
-                Text(
-                  "Downloads",
-                  style: kTextStyle(kSize24, primaryRed, false),
-                ),
-              ],
-            ),
-          )),
+      appBar: _buildAppBar(size),
       backgroundColor: whiteColor,
       body: Padding(
         padding: EdgeInsets.all(kSize16),
-        child: Column(
+        child: Consumer<DownloadManagerProvider>(
+          builder: (context, downloadManager, child) {
+            return downloadManager.downloadList.isNotEmpty
+                ? _buildDownloadList(downloadManager, size)
+                : Center(
+                    child: Text(
+                      "No downloads available",
+                      style: kTextStyle(kSize18, Colors.grey, false),
+                    ),
+                  );
+          },
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(Size size) {
+    return PreferredSize(
+      preferredSize: Size(size.width, 70),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: kSize16, vertical: kSize16),
+        child: Row(
           children: [
-            // Search bar at the top
-            // Container(
-            //   margin: EdgeInsets.only(bottom: kSize16),
-            //   padding: EdgeInsets.symmetric(horizontal: kSize16),
-            //   decoration: BoxDecoration(
-            //     color: Colors.white,
-            //     borderRadius: BorderRadius.circular(kSize9),
-            //     boxShadow: [
-            //       BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
-            //     ],
-            //   ),
-            //   child: Row(
-            //     children: [
-            //       const Icon(Icons.search, color: Colors.grey),
-            //       Expanded(
-            //         child: TextField(
-            //           decoration: InputDecoration(
-            //             hintText: 'Search for media...',
-            //             border: InputBorder.none,
-            //             contentPadding: EdgeInsets.symmetric(vertical: kSize13),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Download items list
-            Expanded(
-              child: ListView.builder(
-                itemCount: Provider.of<DownloadManagerProvider>(context)
-                    .downloadList
-                    .length,
-                itemBuilder: (context, index) {
-                  return downloadItemUi(context, size, index);
-                },
-              ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios_new_outlined),
+              color: primaryRed,
+            ),
+            widthBox(kSize24),
+            Text(
+              "Downloads",
+              style: kTextStyle(kSize24, primaryRed, false),
             ),
           ],
         ),
@@ -86,59 +60,75 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
     );
   }
 
-  // Widget for each download item
-  Widget downloadItemUi(BuildContext context, Size size, int index) {
-    final proivder = Provider.of<DownloadManagerProvider>(context);
-    final item = proivder.downloadList[index].model;
+  Widget _buildDownloadList(
+      DownloadManagerProvider downloadManager, Size size) {
+    return ListView.builder(
+      itemCount: downloadManager.downloadList.length,
+      itemBuilder: (context, index) {
+        return _buildDownloadItem(context, downloadManager, index);
+      },
+    );
+  }
+
+  Widget _buildDownloadItem(
+      BuildContext context, DownloadManagerProvider provider, int index) {
+    final item = provider.downloadList[index].model;
+
     return Container(
       margin: EdgeInsets.symmetric(vertical: kSize11),
       padding: EdgeInsets.all(kSize16),
       decoration: kBoxDecoration(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Title
+          Text(
+            item.title,
+            style: kTextStyle(kSize16, blackColor, true),
+          ),
+          heightBox(kSize9),
+          // Description
+          Text(
+            item.description,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: kTextStyle(kSize15, Colors.grey, false),
+          ),
+          heightBox(kSize9),
+          // Download status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                proivder.downloadList[index].model.title,
-                style: kTextStyle(kSize16, blackColor, true),
-              ),
-              SizedBox(height: kSize9),
-              Text(
-                proivder.downloadList[index].model.description,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: kTextStyle(kSize16, blackColor, true),
-              ),
-              SizedBox(height: kSize9),
-              Visibility(
-                visible: item.isRunning,
+              Expanded(
                 child: Text(
-                  "Status : ${item.stdout}",
-                  style: kTextStyle(kSize16, blackColor, false),
+                  item.isRunning
+                      ? "Status: ${item.stdout}"
+                      : item.isFailed == true
+                          ? "Failed"
+                          : "Completed",
+                  style: kTextStyle(
+                    kSize15,
+                    item.isFailed == true
+                        ? primaryRed
+                        : (item.isRunning ? blackColor : deepRed),
+                    false,
+                  ),
                 ),
               ),
-              Visibility(
-                visible: !item.isRunning,
-                child: Text(
-                  item.isFailed == true ? "Failed" : "Completed",
-                  style: kTextStyle(kSize16,
-                      item.isFailed == false ? deepRed : primaryRed, false),
+
+              // Cancel button
+              if (item.isRunning)
+                IconButton(
+                  icon: const Icon(Icons.close, color: primaryRed),
+                  onPressed: () => provider.cancelDownload(index),
+                  tooltip: 'Cancel Download',
                 ),
-              )
             ],
           ),
-          Visibility(
-            visible: item.isRunning,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: primaryRed),
-              onPressed: item.isRunning
-                  ? () {
-                      proivder.cancelDownload(index);
-                    }
-                  : null,
-            ),
+          heightBox(kSize9),
+          Text(
+            "Download Path : ${item.outputPath}",
+            style: kTextStyle(kSize13, lightRed, false),
           ),
         ],
       ),

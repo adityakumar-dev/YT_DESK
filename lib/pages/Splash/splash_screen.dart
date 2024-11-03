@@ -1,16 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/dependency_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
 import 'package:yt_desk/pages/Home/home_option_screen.dart';
-import 'package:yt_desk/pages/Home/home_screen.dart';
-import 'package:yt_desk/services/dependency_manager/dependency_manager.dart';
 
 class SplashScreen extends StatefulWidget {
   static const rootName = "Splash Screen";
@@ -31,7 +24,6 @@ class _SplashScreenState extends State<SplashScreen> {
             Provider.of<DependencyManagerProvider>(context, listen: false);
       });
       provider!.initDependency().then((value) async {
-        print(provider!.isDependencyDone);
         if (!provider!.isDependencyDone) {
           bool isSudo = await provider!.hasSudoPrivileges();
           if (!isSudo) {
