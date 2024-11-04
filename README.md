@@ -33,10 +33,20 @@ YT_DESK is a Flutter application designed for downloading videos and audio from 
 
 ### HOME
 
-![Home](GIT_ASSET/Home.png)
+![Home](GIT_ASSET/search_media_yt_dlp.png)
+
+### SEARCHING MEDIA 
+
+![Searching Media image](GIT_ASSET/searching_yt_dlp.png)
+
+
+### SEARCH RESULT 
+
+![Search Result image](GIT_ASSET/search_result_screen_yt_dlp.png)
 
 ### DOWNLOAD MANAGER 
 
-![Home](GIT_ASSET/downloadManager.png)
+![Download Manager image](GIT_ASSET/download_screen_yt_dlp.png)
+
 
 ## Thanks for Visting
