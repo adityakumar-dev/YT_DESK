@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -7,7 +6,6 @@ import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
 import 'package:yt_desk/pages/Download/download_feature_screen.dart';
 import 'package:yt_desk/pages/Search/search_result_screen.dart';
-import 'package:yt_desk/services/path_manager/path_manager.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 
 class HomeOptionScreen extends StatefulWidget {

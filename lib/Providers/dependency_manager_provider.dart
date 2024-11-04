@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:yt_desk/services/dependency_manager/dependency_manager.dart';
 
 class DependencyManagerProvider extends ChangeNotifier {
@@ -44,20 +45,137 @@ class DependencyManagerProvider extends ChangeNotifier {
     _currentStatus = "Installing Dependencies...";
     notifyListeners();
 
-    String distro = await DependencyManager.getLinuxDist();
+    if (Platform.isLinux) {
+      String distro = await DependencyManager.getLinuxDist();
 
-    // Install Python if it's not done
-    if (!_isPythonDone) {
-      _currentStatus = "Installing Python...";
-      notifyListeners();
-      _isPythonDone = await DependencyManager.installPython(distro);
-    }
+      // Install Python if it's not done
 
-    // Install yt-dlp only if Python installation was successful
-    if (_isPythonDone && !_isYtDlpDone) {
-      _currentStatus = "Installing yt-dlp...";
+      if (!_isPythonDone) {
+        _currentStatus = "Installing Python...";
+        notifyListeners();
+        _isPythonDone = await DependencyManager.installPython(distro);
+      }
+
+      // Install yt-dlp only if Python installation was successful
+      if (_isPythonDone && !_isYtDlpDone) {
+        _currentStatus = "Installing yt-dlp...";
+        notifyListeners();
+        _isYtDlpDone = await DependencyManager.installYtDlp(distro);
+      }
+    } else if (Platform.isWindows) {
+      _currentStatus = "Accepting Policy...";
       notifyListeners();
-      _isYtDlpDone = await DependencyManager.installYtDlp(distro);
+      bool policyAccepted = await DependencyManager.acceptPolicyWindow();
+      if (!policyAccepted) {
+        _currentStatus = "Failed to accept policy. Aborting installation.";
+        _isError = true;
+        _isInstalling = false;
+        notifyListeners();
+        return;
+      }
+
+      // Install Scoop for managing installations
+      _currentStatus = "Installing Scoop Dependency Manager...";
+      notifyListeners();
+
+      // Install Python if not already installed
+      if (!_isPythonDone) {
+        _currentStatus = "Installing Python...";
+        notifyListeners();
+        // _isPythonDone = await DependencyManager.installPythonWindow();
+
+        Process result = await Process.start(
+          'winget',
+          [
+            'install',
+            'python',
+            '--accept-source-agreements',
+            '--accept-package-agreements'
+          ],
+          runInShell: true,
+        );
+        _currentStatus = "Python download started";
+
+        result.stdout.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            print(res);
+          }
+        });
+        result.stderr.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            print(res);
+          }
+        });
+        _isPythonDone = await result.exitCode == 0;
+      }
+
+      // Install yt-dlp if Python installation is successful
+      if (_isPythonDone && !_isYtDlpDone) {
+        _currentStatus = "Installing yt-dlp...";
+        notifyListeners();
+        // _isYtDlpDone = await DependencyManager.installYtDlpWindow();
+        Process result = await Process.start(
+          'winget',
+          [
+            'install',
+            'yt-dlp',
+            '--accept-source-agreements',
+            '--accept-package-agreements'
+          ],
+          runInShell: true,
+        );
+        _currentStatus = "Yt-dlp Download Process started...";
+        result.stdout.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            _currentStatus = res.toString();
+            print(res);
+          }
+        });
+        result.stderr.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            print(res);
+
+            _currentStatus = res.toString();
+          }
+        });
+        _isYtDlpDone = await result.exitCode == 0;
+      }
+
+      // Install ffmpeg if yt-dlp is installed successfully
+      if (_isYtDlpDone) {
+        _currentStatus = "Installing ffmpeg...";
+        notifyListeners();
+        Process result = await Process.start(
+          'winget',
+          [
+            'install',
+            'ffmpeg',
+            '--accept-source-agreements',
+            '--accept-package-agreements'
+          ],
+          runInShell: true,
+        );
+        _currentStatus = "ffmpeg download started";
+          result.stdout.transform(utf8.decoder).listen((res) {
+            if (kDebugMode) {
+              print(res);
+            }
+          });
+          result.stderr.transform(utf8.decoder).listen((res) {
+            if (kDebugMode) {
+              print(res);
+            }
+          });
+        
+        bool ffmpegInstalled = await result.exitCode == 0;
+        // bool ffmpegInstalled = await DependencyManager.installFFMPEGWindow();
+        if (!ffmpegInstalled) {
+          _isYtDlpDone = false;
+        }
+      }
+    } else {
+      _currentStatus =
+          "Unsupported OS detected. Please install dependencies manually.";
     }
 
     // Update the dependency status

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
@@ -35,8 +34,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     }
   }
 
-  void addDownload(String resolution, String title, String url,
-      String description, String formatId) {
+  void addDownload({required String resolution , String title = " ",required String url,
+     String description = " ",required String formatId}) {
     // Ensure the context is valid for Provider
     final downloadManager =
         Provider.of<DownloadManagerProvider>(context, listen: false);
@@ -47,8 +46,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     // Validate input parameters
     if (title.isEmpty ||
         url.isEmpty ||
-        formatId.isEmpty ||
-        description.isEmpty) {
+        formatId.isEmpty) {
       throw ArgumentError(
           "All input parameters must be provided and non-empty.");
     }
@@ -265,7 +263,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         style: kTextStyle(kSize16, blackColor, true),
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       flex: 1,
                       child: SizedBox(),
                     ),
@@ -338,13 +336,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             child: IconButton(
               onPressed: () {
                 print(SearchManager.publicUrl);
-                addDownload(
+                addDownload(resolution: 
                   SearchManager.mediaDetails[index]['resolution'],
-                  SearchManager.title,
-                  SearchManager.publicUrl,
-                  SearchManager.description,
-                  SearchManager.mediaDetails[index]['formatId'],
+                 title:  SearchManager.title,
+                 url:  SearchManager.publicUrl,
+                 description:  SearchManager.description,
+                 formatId:  SearchManager.mediaDetails[index]['formatId'],
                 );
+                print(
+                    "${SearchManager.mediaDetails[index]['resolution']}, ${SearchManager.title}, ${SearchManager.publicUrl} , ${SearchManager.description ?? ""}, ${SearchManager.mediaDetails[index]['formatId']}");
                 ScaffoldMessenger.of(context)
                   ..hideCurrentMaterialBanner()
                   ..showMaterialBanner(

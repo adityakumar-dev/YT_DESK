@@ -1,8 +1,138 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
 class DependencyManager {
+  //window dependency manager
+  static Future<bool> isWingetAvailable() async {
+  try {
+    ProcessResult result = await Process.run('winget', ['--version'], runInShell: true);
+    return result.exitCode == 0;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Winget not available: $e');
+    }
+    return false;
+  }
+}
+
+static Future<bool> acceptPolicyWindow() async {
+  try {
+    // Start the PowerShell process
+    Process result = await Process.start(
+      'powershell',
+      ['-Command', 'Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe'],
+      mode: ProcessStartMode.normal,
+    );
+
+    // Listen for standard output
+    result.stdout.transform(utf8.decoder).listen((data) {
+      print('Output: $data');
+    });
+
+    // Listen for standard error
+    result.stderr.transform(utf8.decoder).listen((error) {
+      print('Error: $error');
+    });
+
+    // Wait for the process to complete and get the exit code
+    int exitCode = await result.exitCode;
+    
+    if (exitCode == 0) {
+      print('Execution policy set successfully.');
+      return true;
+    } else {
+      print('Failed to set execution policy with exit code: $exitCode');
+      return false;
+    }
+  } catch (e) {
+    print('Exception occurred: $e');
+    return false;
+  }
+}
+
+
+
+// static Future<bool> installPythonWindow() async {
+//   try {
+//     // Start the Scoop process to install Python
+//    Process result = await Process.start(
+//       'winget',
+//       ['install', 'python', '--accept-source-agreements', '--accept-package-agreements'],
+//       runInShell: true,
+//     );
+//   if(kDebugMode){
+//     result.stdout.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+//     result.stderr.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+
+//   }
+//     return await result.exitCode == 0;
+//       } catch (e) {
+//     if (kDebugMode) {
+//       print('Exception occurred: $e');
+//     }
+//     return false;
+//   }
+// }
+
+//   static Future<bool> installYtDlpWindow() async {
+//    try {
+//     // Start the Scoop process to install Python
+//    Process result = await Process.start(
+//       'winget',
+//       ['install', 'yt-dlp', '--accept-source-agreements', '--accept-package-agreements'],
+//       runInShell: true,
+//     );
+//   if(kDebugMode){
+//     result.stdout.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+//     result.stderr.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+
+//   }
+//     return await result.exitCode == 0;
+//       } catch (e) {
+//     if (kDebugMode) {
+//       print('Exception occurred: $e');
+//     }
+//     return false;
+//   }
+//   }
+
+//   static Future<bool> installFFMPEGWindow() async {
+//     try {
+//     // Start the Scoop process to install Python
+//    Process result = await Process.start(
+//       'winget',
+//       ['install', 'ffmpeg', '--accept-source-agreements', '--accept-package-agreements'],
+//       runInShell: true,
+//     );
+//   if(kDebugMode){
+//     result.stdout.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+//     result.stderr.transform(utf8.decoder).listen((res){
+//       print(res);
+//     });
+
+//   }
+//     return await result.exitCode == 0;
+//       } catch (e) {
+//     if (kDebugMode) {
+//       print('Exception occurred: $e');
+//     }
+//     return false;
+//   }
+//   }
+
+  //linux function for setup dependency
   static bool? checkIsLinux() {
     if (Platform.isWindows) {
       return false;
@@ -39,7 +169,7 @@ class DependencyManager {
 
   static Future<bool> checkPython() async {
     try {
-      final result = await Process.run('python', ['--version']);
+      final result = await Process.run('python', ['--version'], runInShell: true);
       if (result.exitCode == 0) {
         return true;
       } else {
@@ -55,7 +185,7 @@ class DependencyManager {
 
   static Future<bool> checkYtDlp() async {
     try {
-      final result = await Process.run('yt-dlp', ['--version']);
+      final result = await Process.run('yt-dlp', ['--version'], runInShell: true);
       if (result.exitCode == 0) {
         return true;
       } else {

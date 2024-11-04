@@ -23,11 +23,11 @@ class SearchManager {
         "yt-dlp",
         ['--get-thumbnail', url],
       );
-      final outputBytes = await result!.stdout
+      final outputBytes = await result.stdout
           .fold<List<int>>([], (acc, data) => acc..addAll(data));
       _thumbnailUrl = utf8.decode(outputBytes).trim();
 
-      print("thumnail Url : ${_thumbnailUrl}");
+      print("thumnail Url : $_thumbnailUrl");
     } catch (e) {
       if (kDebugMode) {
         print(e);

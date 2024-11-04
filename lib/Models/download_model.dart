@@ -20,5 +20,6 @@ class DownloadItemModel {
     required this.arguments,
     required this.outputPath,
     required this.title,
+  
   });
 }

@@ -30,14 +30,20 @@ class DownloadItemProvider extends ChangeNotifier {
 
       _model.process!.stdout.transform(utf8.decoder).listen(
         (data) {
-          print("Stdout received: $data");
+          if(kDebugMode){
+ print("Stdout received: $data");
+         
+          }
           _model.stdout = data;
 
           final progressMatch = RegExp(r'(\d+)%').firstMatch(_model.stdout);
           if (progressMatch != null) {
             _model.progressPercentage =
                 double.tryParse(progressMatch.group(1) ?? '') ?? 0.0 / 100;
-            print("Progress updated: ${_model.progressPercentage}");
+         if(kDebugMode){
+  print("Progress updated: ${_model.progressPercentage}");
+          
+         }
             notifyListeners();
           }
         },
@@ -45,22 +51,34 @@ class DownloadItemProvider extends ChangeNotifier {
 
       _model.process!.stderr.transform(utf8.decoder).listen(
         (data) {
-          print("Stderr received: $data");
+          if(kDebugMode){
+print("Stderr received: $data");
+          
+          }
           _model.stderr = data;
           notifyListeners();
         },
       );
 
       final exitCode = await _model.process!.exitCode;
+      if(kDebugMode){
+
       print("Download process exited with code: $exitCode");
+      }
 
       if (exitCode != 0) {
-        print("Download failed with exit code: $exitCode");
+        if(kDebugMode){
+print("Download failed with exit code: $exitCode");
+        
+        }
         _model.isFailed = true;
         _model.isCompleted = true;
         _model.isRunning = false;
       } else {
-        print("Download completed successfully.");
+        if(kDebugMode){
+          print("Download completed successfully.");
+        
+        }
         _model.isFailed = false;
         _model.isCompleted = true;
         _model.isRunning = false;
@@ -68,7 +86,10 @@ class DownloadItemProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print("Exception caught during download: $e");
+      if(kDebugMode){
+        print("Exception caught during download: $e");
+      
+      }
       _model.isFailed = true;
       _model.isCompleted = true;
       _model.isRunning = false;
@@ -79,7 +100,17 @@ class DownloadItemProvider extends ChangeNotifier {
 
   void closeDownload() async {
     if (_model.isRunning) {
-      _model.process?.kill(ProcessSignal.sigterm);
+      if (Platform.isWindows) {
+        if(kDebugMode){
+print("Trying to cancel download");
+        
+        }
+        await Process.run(
+            'taskkill', ['/PID', '${_model.process?.pid}', '/F', '/T']);
+      } else {
+        _model.process?.kill(ProcessSignal.sigterm);
+      }
+
       _model.isCompleted = true;
       _model.isRunning = false;
       _model.isFailed = true;

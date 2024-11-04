@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/dependency_manager_provider.dart';
@@ -25,10 +26,13 @@ class _SplashScreenState extends State<SplashScreen> {
       });
       provider!.initDependency().then((value) async {
         if (!provider!.isDependencyDone) {
-          bool isSudo = await provider!.hasSudoPrivileges();
+          if(Platform.isLinux){
+ bool isSudo = await provider!.hasSudoPrivileges();
           if (!isSudo) {
             await passwordHandlerLinux(context);
           }
+          }
+         
           if (!provider!.isDependencyDone) {
             await provider!.installDependency();
             if (provider!.isDependencyDone) {
@@ -79,10 +83,10 @@ class _SplashScreenState extends State<SplashScreen> {
                     strokeWidth: 1,
                   ),
                   heightBox(kSize22),
-                  Text(
-                    provider!.currentStatus,
+                  Consumer<DependencyManagerProvider>(builder: (context, value, child) => Text(
+                    value.currentStatus,
                     style: kTextStyle(kSize16, blackColor, false),
-                  ),
+                  ),)
                 ],
               ),
             )
