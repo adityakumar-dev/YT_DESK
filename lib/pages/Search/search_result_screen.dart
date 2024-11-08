@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
 import 'package:yt_desk/pages/Download/download_feature_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
+import 'package:yt_desk/utils/common/common.dart';
 
 import '../../Providers/download_manager_provider.dart';
 
@@ -18,24 +20,12 @@ class SearchResultScreen extends StatefulWidget {
 }
 
 class _SearchResultScreenState extends State<SearchResultScreen> {
-  String getOutputFileName(String name) {
-    if (Platform.isLinux) {
-      String newString = '';
-      for (int i = 0; i < name.length; i++) {
-        if (name[i] == ' ') {
-          newString += '_';
-        } else {
-          newString += name[i];
-        }
-      }
-      return newString;
-    } else {
-      return name;
-    }
-  }
-
-  void addDownload({required String resolution , String title = " ",required String url,
-     String description = " ",required String formatId}) {
+  void addDownload(
+      {required String resolution,
+      String title = " ",
+      required String url,
+      String description = " ",
+      required String formatId}) {
     // Ensure the context is valid for Provider
     final downloadManager =
         Provider.of<DownloadManagerProvider>(context, listen: false);
@@ -43,15 +33,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         Provider.of<PathManagerProvider>(context, listen: false).outputPath ??
             '';
 
-    // Validate input parameters
-    if (title.isEmpty ||
-        url.isEmpty ||
-        formatId.isEmpty) {
-      throw ArgumentError(
-          "All input parameters must be provided and non-empty.");
-    }
-
-    // Construct download command options based on the resolution and format
     List<String> commandOptions;
     if (resolution.toLowerCase() == "audio only") {
       commandOptions = [
@@ -69,22 +50,38 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         url
       ];
     } else {
-      commandOptions = [
-        '-f',
-        'bestaudio+$formatId',
-        '-o',
-        "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
-        '-N',
-        '5',
-        '--write-sub',
-        '--sub-lang',
-        'en',
-        '--convert-subs',
-        'srt',
-        '--embed-subs',
-        '--embed-thumbnail',
-        url
-      ];
+      try {
+        int.parse(formatId);
+        commandOptions = [
+          '-f',
+          '$formatId + bestaudio',
+          '-o',
+          "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
+          '-N',
+          '5',
+          '--write-sub',
+          '--sub-lang',
+          'en',
+          '--convert-subs',
+          'srt',
+          '--embed-subs',
+          '--embed-thumbnail',
+          url
+        ];
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+        commandOptions = [
+          '-f',
+          formatId,
+          '-o',
+          "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
+          '-N',
+          '5',
+          url
+        ];
+      }
     }
 
     try {
@@ -336,12 +333,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             child: IconButton(
               onPressed: () {
                 print(SearchManager.publicUrl);
-                addDownload(resolution: 
-                  SearchManager.mediaDetails[index]['resolution'],
-                 title:  SearchManager.title,
-                 url:  SearchManager.publicUrl,
-                 description:  SearchManager.description,
-                 formatId:  SearchManager.mediaDetails[index]['formatId'],
+                addDownload(
+                  resolution: SearchManager.mediaDetails[index]['resolution'],
+                  title: SearchManager.title,
+                  url: SearchManager.publicUrl,
+                  description: SearchManager.description,
+                  formatId: SearchManager.mediaDetails[index]['formatId'],
                 );
                 print(
                     "${SearchManager.mediaDetails[index]['resolution']}, ${SearchManager.title}, ${SearchManager.publicUrl} , ${SearchManager.description ?? ""}, ${SearchManager.mediaDetails[index]['formatId']}");

@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
 import 'package:yt_desk/pages/Download/download_feature_screen.dart';
+import 'package:yt_desk/pages/Search/search_result_playlist.dart';
 import 'package:yt_desk/pages/Search/search_result_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 
@@ -168,6 +168,7 @@ class _HomeOptionScreenState extends State<HomeOptionScreen> {
                     showDialog(
                       context: context,
                       builder: (context) => Material(
+                        color: whiteColor,
                         child: Center(
                           child: Padding(
                             padding: EdgeInsets.all(kSize18),
@@ -196,9 +197,19 @@ class _HomeOptionScreenState extends State<HomeOptionScreen> {
                         ),
                       ),
                     );
-                    await SearchManager.search(urlController.text);
+                    int isSuccess =
+                        await SearchManager.search(urlController.text);
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, SearchResultScreen.rootName);
+
+                    if (isSuccess == 0) {
+                      if (SearchManager.isPlaylistFound) {
+                        Navigator.pushNamed(
+                            context, SearchResultPlaylist.rootName);
+                      } else {
+                        Navigator.pushNamed(
+                            context, SearchResultScreen.rootName);
+                      }
+                    } else {}
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 100),

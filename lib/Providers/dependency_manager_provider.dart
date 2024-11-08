@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
-import 'package:restart_app/restart_app.dart';
 import 'package:yt_desk/services/dependency_manager/dependency_manager.dart';
 
 class DependencyManagerProvider extends ChangeNotifier {
@@ -156,17 +154,17 @@ class DependencyManagerProvider extends ChangeNotifier {
           runInShell: true,
         );
         _currentStatus = "ffmpeg download started";
-          result.stdout.transform(utf8.decoder).listen((res) {
-            if (kDebugMode) {
-              print(res);
-            }
-          });
-          result.stderr.transform(utf8.decoder).listen((res) {
-            if (kDebugMode) {
-              print(res);
-            }
-          });
-        
+        result.stdout.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            print(res);
+          }
+        });
+        result.stderr.transform(utf8.decoder).listen((res) {
+          if (kDebugMode) {
+            print(res);
+          }
+        });
+
         bool ffmpegInstalled = await result.exitCode == 0;
         // bool ffmpegInstalled = await DependencyManager.installFFMPEGWindow();
         if (!ffmpegInstalled) {
