@@ -1,5 +1,6 @@
 //custom sizes
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 double kSize5 = 5;
 double kSize7 = 7;
@@ -83,8 +84,21 @@ getBanner() {
   );
 }
 
-getInputDecoration(String label) {
+getInputDecoration(String label, TextEditingController controller) {
   return InputDecoration(
+    suffixIcon: IconButton(
+        onPressed: () async {
+          final data = await Clipboard.getData('text/plain');
+          controller.text = data == null ? '' : data.text ?? '';
+        },
+        icon: const Icon(
+          Icons.paste_outlined,
+          color: primaryRed,
+        )),
+    prefixIcon: Icon(
+      Icons.link,
+      color: deepRed,
+    ),
     fillColor: Colors.white,
     enabledBorder: OutlineInputBorder(
       borderSide: const BorderSide(

@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yt_desk/Models/download_model.dart';
 import 'package:yt_desk/Providers/download_item_provider.dart';
 import 'package:yt_desk/Providers/download_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
+import 'package:yt_desk/utils/common/common.dart';
+import 'package:yt_desk/utils/constants/constants.dart';
 
 class DownloadFeatureScreen extends StatefulWidget {
   static const String rootName = "DownloadFeatureScreen";
@@ -13,91 +18,125 @@ class DownloadFeatureScreen extends StatefulWidget {
   State<DownloadFeatureScreen> createState() => _DownloadFeatureScreenState();
 }
 
-class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
+class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TabController(length: downloadPageTabs.length, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
+    DownloadManagerProvider value =
+        Provider.of<DownloadManagerProvider>(context);
     return Scaffold(
       appBar: _buildAppBar(size),
       backgroundColor: whiteColor,
-      body: Padding(
-        padding: EdgeInsets.all(kSize16),
-        child: Consumer<DownloadManagerProvider>(
-          builder: (context, downloadManager, child) {
-            return downloadManager.activeDownloads.isEmpty &&
-                    downloadManager.pendingDownloadsQueue.isEmpty &&
-                    downloadManager.completedDownloads.isEmpty
-                ? Center(
-                    child: Text(
-                      "Downloads is empty",
-                      style: kTextStyle(kSize16, mutedBlueColor, false),
+      body: TabBarView(
+        controller: _controller,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(kSize16),
+            child: value.activeDownloads.isNotEmpty
+                ? SingleChildScrollView(
+                    child: Column(
+                    children: List.generate(
+                      value.activeDownloads.length,
+                      (index) {
+                        return _buildDownloadItem(
+                          value.activeDownloads[index],
+                          () {
+                            value.cancelDownload(index);
+                          },
+                        );
+                      },
+                    ),
+                  ))
+                : emptyDownloadMessageWidget("No Active Downloads"),
+          ),
+          Padding(
+            padding: EdgeInsets.all(kSize16),
+            child: value.pendingDownloadsQueue.isNotEmpty
+                ? SingleChildScrollView(
+                    child: Column(
+                      children: List.generate(
+                        value.pendingDownloadsQueue.length,
+                        (index) {
+                          return _buildPendingDownloadItem(context,
+                              value.pendingDownloadsQueue[index], index, () {
+                            value.cancelPendingDownload(index);
+                          });
+                        },
+                      ),
                     ),
                   )
-                : SingleChildScrollView(
+                : emptyDownloadMessageWidget("No Pending Downloads"),
+          ),
+          Padding(
+            padding: EdgeInsets.all(kSize16),
+            child: value.completedDownloads.isNotEmpty
+                ? SingleChildScrollView(
                     child: Column(
-                      children: [
-                        //Running active downloads
-                        ...List.generate(
-                          downloadManager.activeDownloads.length,
-                          (index) {
-                            return _buildDownloadItem(
-                              downloadManager.activeDownloads[index],
-                              () {
-                                downloadManager.cancelDownload(index);
-                              },
-                            );
+                      children: List.generate(
+                        value.completedDownloads.length,
+                        (index) => _buildCompletedDownloadItem(
+                          value.completedDownloads[index],
+                          () {
+                            value.cancelCompletedDownload(index);
                           },
                         ),
-                        //Pending downloads
-
-                        ...List.generate(
-                          downloadManager.pendingDownloadsQueue.length,
-                          (index) {
-                            return _buildPendingDownloadItem(
-                                downloadManager.pendingDownloadsQueue[index],
-                                index, () {
-                              downloadManager.cancelPendingDownload(index);
-                            });
-                          },
-                        ),
-                        //Completed downloads
-
-                        ...List.generate(
-                          downloadManager.completedDownloads.length,
-                          (index) => _buildCompletedDownloadItem(
-                            downloadManager.completedDownloads[index],
-                            () {
-                              downloadManager.cancelCompletedDownload(index);
-                            },
-                          ),
-                        )
-                      ],
+                      ),
                     ),
-                  );
-          },
-        ),
+                  )
+                : emptyDownloadMessageWidget("No Completed Downloads"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Center emptyDownloadMessageWidget(String txt) {
+    return Center(
+      child: Text(
+        txt,
+        style: kTextStyle(kSize16, mutedBlueColor, false),
       ),
     );
   }
 
   PreferredSizeWidget _buildAppBar(Size size) {
     return PreferredSize(
-      preferredSize: Size(size.width, 70),
+      preferredSize: Size(size.width, 140),
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: kSize16, vertical: kSize16),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_outlined),
-              color: primaryRed,
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                  color: primaryRed,
+                ),
+                widthBox(kSize24),
+                Text(
+                  "Downloads",
+                  style: kTextStyle(kSize24, primaryRed, false),
+                ),
+              ],
             ),
-            widthBox(kSize24),
-            Text(
-              "Downloads",
-              style: kTextStyle(kSize24, primaryRed, false),
-            ),
+            TabBar(
+              labelColor: primaryRed,
+              indicatorColor: primaryRed,
+              controller: _controller,
+              tabs: downloadPageTabs,
+              dividerColor: lightRed,
+            )
           ],
         ),
       ),
@@ -106,58 +145,84 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
 
   Widget _buildCompletedDownloadItem(
       DownloadItemProvider item, Function() callBack) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: kSize11),
-      padding: EdgeInsets.all(kSize16),
-      decoration: kBoxDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title
-          Text(
-            item.model.title,
-            style: kTextStyle(kSize16, blackColor, true),
-          ),
-          heightBox(kSize9),
-          // Description
-          if (item.model.description.isNotEmpty)
+    return GestureDetector(
+      onTap: () async {
+        // print("${item.model.outputPath}");
+
+        String fullPath = "";
+        if (Platform.isWindows) {
+          fullPath = "${item.model.outputPath}\\${item.model.title}.mp4";
+        } else {
+          fullPath = "${item.model.outputPath}.mkv";
+        }
+        final Uri fileUri = Uri.file(fullPath);
+        if (await canLaunchUrl(fileUri)) {
+          await launchUrl(fileUri);
+        } else {
+          print('Could not open the video file: $fullPath');
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: kSize11),
+        padding: EdgeInsets.all(kSize16),
+        decoration: kBoxDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
             Text(
-              item.model.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: kTextStyle(kSize15, Colors.grey, false),
+              item.model.title,
+              style: kTextStyle(kSize16, blackColor, true),
             ),
-          heightBox(kSize9),
-          // Download status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  item.model.isFailed == true ? "Failed" : "Completed",
-                  style: kTextStyle(
-                    kSize15,
-                    primaryRed,
-                    false,
+            heightBox(kSize9),
+            // Description
+            if (item.model.description.isNotEmpty)
+              Text(
+                item.model.description,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: kTextStyle(kSize15, Colors.grey, false),
+              ),
+            if (item.model.description.isNotEmpty) heightBox(kSize9),
+            // Download status
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.model.isFailed == true ? "Failed" : "Completed",
+                    style: kTextStyle(
+                      kSize15,
+                      primaryRed,
+                      false,
+                    ),
                   ),
                 ),
-              ),
-
-              // Cancel button
-
-              IconButton(
-                icon: const Icon(Icons.delete, color: primaryRed),
-                onPressed: callBack,
-                tooltip: 'Delete Download',
-              ),
-            ],
-          ),
-          heightBox(kSize9),
-          Text(
-            "Download Path : ${item.model.outputPath}",
-            style: kTextStyle(kSize13, lightRed, false),
-          ),
-        ],
+                IconButton(
+                  icon: const Icon(Icons.delete, color: primaryRed),
+                  onPressed: callBack,
+                  tooltip: 'Delete Download',
+                ),
+              ],
+            ),
+            // heightBox(kSize9),
+            Row(
+              children: [
+                Text(
+                  "Url : ${item.model.url}",
+                  style: kTextStyle(kSize13, primaryRed, false),
+                ),
+                widthBox(kSize16),
+                copyUrlWidget(item.model.url, context)
+              ],
+            ),
+            heightBox(kSize9),
+            Text(
+              "Download Path : ${item.model.outputPath}",
+              style: kTextStyle(kSize13, lightRed, false),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -214,6 +279,16 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
                 ),
             ],
           ),
+          Row(
+            children: [
+              Text(
+                "Url : ${item.model.url}",
+                style: kTextStyle(kSize13, primaryRed, false),
+              ),
+              widthBox(kSize16),
+              copyUrlWidget(item.model.url, context)
+            ],
+          ),
           heightBox(kSize9),
           Text(
             "Download Path : ${item.model.outputPath}",
@@ -225,8 +300,8 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen> {
   }
 }
 
-Widget _buildPendingDownloadItem(
-    DownloadItemModel model, int index, Function() callBack) {
+Widget _buildPendingDownloadItem(BuildContext context, DownloadItemModel model,
+    int index, Function() callBack) {
   return Container(
     margin: EdgeInsets.symmetric(vertical: kSize11),
     padding: EdgeInsets.all(kSize16),
@@ -267,6 +342,16 @@ Widget _buildPendingDownloadItem(
               onPressed: callBack,
               tooltip: 'Cancel Download',
             ),
+          ],
+        ),
+        Row(
+          children: [
+            Text(
+              "Url : ${model.url}",
+              style: kTextStyle(kSize13, primaryRed, false),
+            ),
+            widthBox(kSize16),
+            copyUrlWidget(model.url, context)
           ],
         ),
         heightBox(kSize9),

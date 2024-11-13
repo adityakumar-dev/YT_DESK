@@ -1,12 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yt_desk/Providers/download_manager_provider.dart';
-import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
-import 'package:yt_desk/pages/Download/download_feature_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 import 'package:yt_desk/utils/common/common.dart';
 
@@ -118,9 +113,10 @@ class _SearchResultPlaylistState extends State<SearchResultPlaylist> {
             const Spacer(),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryRed,
-                  padding: EdgeInsets.symmetric(
-                      horizontal: kSize18, vertical: kSize11)),
+                backgroundColor: primaryRed,
+                padding: EdgeInsets.symmetric(
+                    horizontal: kSize18, vertical: kSize11),
+              ),
               onPressed: () {
                 int trueCount = 0;
                 selectedVideos.forEach((el) {
@@ -192,35 +188,10 @@ class _SearchResultPlaylistState extends State<SearchResultPlaylist> {
                         borderRadius: BorderRadius.circular(kSize9),
                         child: GestureDetector(
                           onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: whiteColor,
-                                title: Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      icon: Icon(
-                                        Icons.close,
-                                        size: kSize30,
-                                        color: primaryRed,
-                                      ),
-                                    ),
-                                    widthBox(kSize22),
-                                    Text('${video['title'] ?? "No Title"}'),
-                                  ],
-                                ),
-                                content: Container(
-                                  decoration: kBoxDecoration(),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: kSize5, vertical: kSize5),
-                                  child: Image.network(
-                                      SearchManager.playListThumnail[index]),
-                                ),
-                              ),
-                            );
+                            showThumbnailDailogWidget(
+                                context,
+                                '${video['title'] ?? "No Title"}',
+                                SearchManager.playListThumnail[index]);
                           },
                           child: Image.network(
                             SearchManager.playListThumnail[index],
@@ -258,31 +229,7 @@ class _SearchResultPlaylistState extends State<SearchResultPlaylist> {
                         video['url'] ?? 'No URL'),
                     widthBox(kSize5),
                     video['url'] != null
-                        ? IconButton(
-                            onPressed: () {
-                              Clipboard.setData(
-                                  ClipboardData(text: video['url']));
-                              ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: whiteColor,
-                                    showCloseIcon: true,
-                                    closeIconColor: primaryRed,
-                                    content: Text(
-                                      "${video['url']} copied to clipboard successfully",
-                                      style: kTextStyle(
-                                          kSize16, primaryRed, false),
-                                    ),
-                                  ),
-                                );
-                            },
-                            icon: Icon(
-                              Icons.copy,
-                              color: lightGray,
-                              size: kSize22,
-                            ),
-                          )
+                        ? copyUrlWidget(video['url'], context)
                         : const SizedBox.shrink(),
                     widthBox(kSize11),
                     Text("${video['duration']}")
@@ -305,19 +252,6 @@ class _SearchResultPlaylistState extends State<SearchResultPlaylist> {
                 ),
               ),
             );
-
-            // return CheckboxListTile(
-            //   value: selectedVideos[index],
-            //   onChanged: (bool? value) {
-            //     setState(() {
-            //       selectedVideos[index] = value ?? false;
-            //     });
-            //     addToDownloadList(index);
-            //   },
-            //   title: Text(video['title'] ?? 'No Title'),
-            //   subtitle: Text(video['url'] ?? 'No URL'),
-            //   secondary: const Icon(Icons.video_library, color: primaryRed),
-            // );
           },
         ),
       ),

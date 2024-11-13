@@ -26,13 +26,13 @@ class _SplashScreenState extends State<SplashScreen> {
       });
       provider!.initDependency().then((value) async {
         if (!provider!.isDependencyDone) {
-          if(Platform.isLinux){
- bool isSudo = await provider!.hasSudoPrivileges();
-          if (!isSudo) {
-            await passwordHandlerLinux(context);
+          if (Platform.isLinux) {
+            bool isSudo = await provider!.hasSudoPrivileges();
+            if (!isSudo) {
+              await passwordHandlerLinux(context);
+            }
           }
-          }
-         
+
           if (!provider!.isDependencyDone) {
             await provider!.installDependency();
             if (provider!.isDependencyDone) {
@@ -83,10 +83,12 @@ class _SplashScreenState extends State<SplashScreen> {
                     strokeWidth: 1,
                   ),
                   heightBox(kSize22),
-                  Consumer<DependencyManagerProvider>(builder: (context, value, child) => Text(
-                    value.currentStatus,
-                    style: kTextStyle(kSize16, blackColor, false),
-                  ),)
+                  Consumer<DependencyManagerProvider>(
+                    builder: (context, value, child) => Text(
+                      value.currentStatus,
+                      style: kTextStyle(kSize16, blackColor, false),
+                    ),
+                  )
                 ],
               ),
             )
@@ -115,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: const TextStyle(
                 color: darkRed,
               ),
-              decoration: getInputDecoration("Enter Password"),
+              decoration: getInputDecoration("Enter Password", controller),
             )
           ],
         ),

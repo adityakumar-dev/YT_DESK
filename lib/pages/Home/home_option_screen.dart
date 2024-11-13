@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
 import 'package:yt_desk/UiHelper/ui_helper.dart';
 import 'package:yt_desk/pages/Download/download_feature_screen.dart';
-import 'package:yt_desk/pages/Search/search_result_playlist.dart';
-import 'package:yt_desk/pages/Search/search_result_screen.dart';
+import 'package:yt_desk/pages/Search/playlist_result/search_result_playlist.dart';
+import 'package:yt_desk/pages/Search/video_result/search_result_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 
 class HomeOptionScreen extends StatefulWidget {
@@ -146,10 +146,8 @@ class _HomeOptionScreenState extends State<HomeOptionScreen> {
                 TextField(
                   controller: urlController,
                   style: TextStyle(color: deepRed),
-                  decoration:
-                      getInputDecoration("Enter Social Media Link").copyWith(
-                    prefixIcon: Icon(Icons.link, color: deepRed),
-                  ),
+                  decoration: getInputDecoration(
+                      "Enter Social Media Link", urlController),
                 ),
                 SizedBox(height: kSize42),
                 GestureDetector(
@@ -209,7 +207,44 @@ class _HomeOptionScreenState extends State<HomeOptionScreen> {
                         Navigator.pushNamed(
                             context, SearchResultScreen.rootName);
                       }
-                    } else {}
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Row(
+                            children: [
+                              IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: primaryRed,
+                                  )),
+                              widthBox(kSize16),
+                              Text(
+                                "Error",
+                                style: kTextStyle(kSize16, primaryRed, false),
+                              )
+                            ],
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              LottieBuilder.asset(
+                                'assets/lottie/error.json',
+                                height: 200,
+                              ),
+                              heightBox(kSize16),
+                              Text(
+                                "Please check your input url OR internet connection and try again!",
+                                style:
+                                    kTextStyle(kSize13, mutedBlueColor, false),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    }
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 100),

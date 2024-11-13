@@ -9,7 +9,7 @@ import 'package:yt_desk/pages/Download/download_feature_screen.dart';
 import 'package:yt_desk/services/search_manager/search_manager.dart';
 import 'package:yt_desk/utils/common/common.dart';
 
-import '../../Providers/download_manager_provider.dart';
+import '../../../Providers/download_manager_provider.dart';
 
 class SearchResultScreen extends StatefulWidget {
   static String rootName = "SearchResultScreen";
@@ -34,12 +34,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             '';
 
     List<String> commandOptions;
+    String outputPath = "";
+    if (Platform.isWindows) {
+      outputPath =
+          "$path\\${getOutputFileName(title.trim())}-${DateTime.now().toString().split(" ")[1]}";
+    } else {
+      outputPath =
+          "$path/${getOutputFileName(title.trim())}-${DateTime.now().toString().split(" ")[1]}";
+    }
     if (resolution.toLowerCase() == "audio only") {
       commandOptions = [
         '-f',
         'bestaudio',
         '-o',
-        "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
+        "$outputPath.%(ext)s",
         '-N',
         '5',
         '--write-sub',
@@ -56,7 +64,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           '-f',
           '$formatId + bestaudio',
           '-o',
-          "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
+          "$outputPath.%(ext)s",
           '-N',
           '5',
           '--write-sub',
@@ -76,7 +84,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           '-f',
           formatId,
           '-o',
-          "$path/${getOutputFileName(title.trim())}-${DateTime.now()}.%(ext)s",
+          "$outputPath.%(ext)s",
           '-N',
           '5',
           url
@@ -88,7 +96,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       print(url);
       // Add the download with the constructed options
       downloadManager.addDownload(
-          title, url, commandOptions, path, description);
+          title, url, commandOptions, outputPath, description);
     } catch (e) {
       // Handle any exceptions that might occur during the download process
       debugPrint("Error adding download: $e");
@@ -166,16 +174,33 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 700,
-              padding:
-                  EdgeInsets.symmetric(horizontal: kSize16, vertical: kSize16),
-              decoration: kBoxDecoration(),
-              child: Image.network(
-                SearchManager.thumbnailUrl,
-                alignment: Alignment.center,
-                fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () => showThumbnailDailogWidget(
+                  context, SearchManager.title, SearchManager.publicUrl),
+              child: Container(
+                width: 700,
+                padding: EdgeInsets.symmetric(
+                    horizontal: kSize16, vertical: kSize16),
+                decoration: kBoxDecoration(),
+                child: Image.network(
+                  SearchManager.thumbnailUrl,
+                  alignment: Alignment.center,
+                  fit: BoxFit.cover,
+                ),
               ),
+            ),
+            heightBox(kSize16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  SearchManager.publicUrl,
+                  style: kTextStyle(kSize16, primaryRed, false),
+                  textAlign: TextAlign.center,
+                ),
+                widthBox(kSize15),
+                copyUrlWidget(SearchManager.publicUrl, context)
+              ],
             ),
             heightBox(kSize16),
             Text(
@@ -187,7 +212,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             Text(
               SearchManager.description,
               overflow: TextOverflow.visible,
-              style: kTextStyle(kSize13, blackColor, false),
+              style: kTextStyle(kSize13, darkGrayColor, false),
             ),
           ],
         ),

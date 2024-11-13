@@ -23,7 +23,7 @@ class DownloadItemProvider extends ChangeNotifier {
         'yt-dlp', // Ensure the path is correct or use '/full/path/to/yt-dlp' if necessary
         _model.arguments,
 
-        workingDirectory: _model.outputPath,
+        // workingDirectory: _model.outputPath,
       );
 
       // print("Download process started successfully.");

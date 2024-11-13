@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:yt_desk/Providers/download_manager_provider.dart';
 import 'package:yt_desk/Providers/path_manager_provider.dart';
@@ -46,6 +47,14 @@ handlePlaylistDownload(BuildContext context, List<bool> isChecked) {
   final el = SearchManager.playlistEntries;
   for (int i = 0; i < el.length; i++) {
     if (isChecked[i]) {
+      String outputPath = "";
+      if (Platform.isWindows) {
+        outputPath =
+            "${path.outputPath}\\${getOutputFileName(el[i]['title'].trim())}-${DateTime.now().toString().split(" ")[1]}";
+      } else {
+        outputPath =
+            "${path.outputPath}/${getOutputFileName(el[i]['title'].trim())}-${DateTime.now().toString().split(" ")[1]}";
+      }
       provider.addDownload(
           el[i]['title'],
           el[i]['url'],
@@ -53,7 +62,7 @@ handlePlaylistDownload(BuildContext context, List<bool> isChecked) {
             '-f',
             'bestvideo + bestaudio',
             '-o',
-            "${path.outputPath}/${getOutputFileName(el[i]['title'].trim())}-${DateTime.now()}.%(ext)s",
+            "$outputPath.%(ext)s",
             '-N',
             '5',
             '--write-sub',
@@ -64,7 +73,7 @@ handlePlaylistDownload(BuildContext context, List<bool> isChecked) {
             '--embed-subs',
             el[i]['url']
           ],
-          path.outputPath!,
+          outputPath,
           '');
     }
   }
@@ -81,4 +90,61 @@ handlePlaylistDownload(BuildContext context, List<bool> isChecked) {
         ),
       ),
     );
+}
+
+IconButton copyUrlWidget(String url, BuildContext context) {
+  return IconButton(
+    onPressed: () {
+      Clipboard.setData(ClipboardData(text: url));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            backgroundColor: whiteColor,
+            showCloseIcon: true,
+            closeIconColor: primaryRed,
+            content: Text(
+              "$url copied to clipboard successfully",
+              style: kTextStyle(kSize16, primaryRed, false),
+            ),
+          ),
+        );
+    },
+    icon: Icon(
+      Icons.copy,
+      color: mutedBlueColor,
+      size: kSize22,
+    ),
+  );
+}
+
+Future<dynamic> showThumbnailDailogWidget(
+    BuildContext context, String title, String url) {
+  return showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: whiteColor,
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.close,
+              size: kSize30,
+              color: primaryRed,
+            ),
+          ),
+          widthBox(kSize22),
+          Text(title),
+        ],
+      ),
+      content: Container(
+        decoration: kBoxDecoration(),
+        padding: EdgeInsets.symmetric(horizontal: kSize5, vertical: kSize5),
+        child: Image.network(url),
+      ),
+    ),
+  );
 }
