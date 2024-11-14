@@ -33,6 +33,8 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
     final size = MediaQuery.of(context).size;
     DownloadManagerProvider value =
         Provider.of<DownloadManagerProvider>(context);
+    print(value.pausedDownloads.isNotEmpty);
+
     return Scaffold(
       appBar: _buildAppBar(size),
       backgroundColor: whiteColor,
@@ -41,21 +43,44 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
         children: [
           Padding(
             padding: EdgeInsets.all(kSize16),
-            child: value.activeDownloads.isNotEmpty
+            child: value.activeDownloads.isNotEmpty ||
+                    value.pausedDownloads.isNotEmpty
                 ? SingleChildScrollView(
                     child: Column(
-                    children: List.generate(
-                      value.activeDownloads.length,
-                      (index) {
-                        return _buildDownloadItem(
-                          value.activeDownloads[index],
-                          () {
-                            value.cancelDownload(index);
+                      children: [
+                        ...List.generate(
+                          value.activeDownloads.length,
+                          (index) {
+                            return _buildDownloadItem(
+                              value.activeDownloads[index],
+                              false,
+                              () {
+                                value.cancelDownload(index, false);
+                              },
+                              () {
+                                value.pauseDownload(index);
+                              },
+                            );
                           },
-                        );
-                      },
+                        ),
+                        ...List.generate(
+                          value.pausedDownloads.length,
+                          (index) {
+                            return _buildDownloadItem(
+                              value.pausedDownloads[index],
+                              true,
+                              () {
+                                value.cancelDownload(index, true);
+                              },
+                              () {
+                                value.resumeDownload(index);
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ))
+                  )
                 : emptyDownloadMessageWidget("No Active Downloads"),
           ),
           Padding(
@@ -80,8 +105,8 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
             padding: EdgeInsets.all(kSize16),
             child: value.completedDownloads.isNotEmpty
                 ? SingleChildScrollView(
-                    child: Column(
-                      children: List.generate(
+                    child: Column(children: [
+                      ...List.generate(
                         value.completedDownloads.length,
                         (index) => _buildCompletedDownloadItem(
                           value.completedDownloads[index],
@@ -90,7 +115,7 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
                           },
                         ),
                       ),
-                    ),
+                    ]),
                   )
                 : emptyDownloadMessageWidget("No Completed Downloads"),
           ),
@@ -227,7 +252,8 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
     );
   }
 
-  Widget _buildDownloadItem(DownloadItemProvider item, Function() callBack) {
+  Widget _buildDownloadItem(DownloadItemProvider item, bool isPaused,
+      Function() callBack, Function() pauseCallBack) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: kSize11),
       padding: EdgeInsets.all(kSize16),
@@ -255,11 +281,13 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
             children: [
               Expanded(
                 child: Text(
-                  item.model.isRunning
-                      ? "Status: ${item.model.stdout}"
-                      : item.model.isFailed == true
-                          ? "Failed"
-                          : "Completed",
+                  isPaused
+                      ? "Paused"
+                      : item.model.isRunning
+                          ? "Status: ${item.model.stdout}"
+                          : item.model.isFailed == true
+                              ? "Failed"
+                              : "Completed",
                   style: kTextStyle(
                     kSize15,
                     item.model.isFailed == true
@@ -270,13 +298,23 @@ class _DownloadFeatureScreenState extends State<DownloadFeatureScreen>
                 ),
               ),
 
+              IconButton(
+                onPressed: () {
+                  pauseCallBack();
+                  print(pauseCallBack);
+                },
+                icon: Icon(isPaused ? Icons.play_arrow : Icons.pause),
+              ),
               // Cancel button
-              if (item.model.isRunning)
-                IconButton(
-                  icon: const Icon(Icons.close, color: primaryRed),
-                  onPressed: callBack,
-                  tooltip: 'Cancel Download',
-                ),
+
+              IconButton(
+                icon: const Icon(Icons.close, color: primaryRed),
+                onPressed: () {
+                  callBack();
+                  print("cancel download");
+                },
+                tooltip: 'Cancel Download',
+              ),
             ],
           ),
           Row(
